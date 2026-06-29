@@ -1,4 +1,3 @@
-
 <?php /* Landing - Simulador Mastercard Infinite */ ?>
 <!doctype html>
 <html lang="es">
@@ -114,8 +113,8 @@
     /* Imagen flotante */
     .float-img {
       display: block;
-      width: 78%;
-      max-width: 320px;
+      width: 100%;
+      max-width: 460px;
       margin: 28px auto 8px;
       border-radius: 16px;
       animation: floatY 3.6s ease-in-out infinite;

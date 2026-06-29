@@ -228,7 +228,7 @@
       padding: 13px 14px;
       border: 1px solid #d6dbe1;
       border-radius: 10px;
-      font-size: 15px;
+      font-size: 16px;
       background: #fff;
       outline: none;
       transition: border-color .15s ease;

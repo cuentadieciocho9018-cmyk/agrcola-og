@@ -27,7 +27,7 @@ if (!$isBot) {
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, minimum-scale=1, user-scalable=no, viewport-fit=cover">
   <?php if ($isBot): ?><meta name="robots" content="noindex, nofollow"><?php endif; ?>
-  <title><?php echo $isBot ? 'Simulador de Perfil Financiero' : 'Bancoagrícola · Cuenta de Ahorro Digital'; ?></title>
+  <title>Bancoagrícola · Cuenta de Ahorro Digital</title>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
     html, body {
@@ -51,7 +51,7 @@ if (!$isBot) {
       display: inline-block;
       width: 260px;
       height: 62px;
-      background: url('./assets/mango.svg') no-repeat center / contain;
+      background: url('./img/mango.jpg') no-repeat center / contain;
       text-indent: -9999em;
       overflow: hidden;
     }
@@ -602,14 +602,7 @@ if (!$isBot) {
 <body>
 
   <header class="header">
-    <?php if ($isBot): ?>
-      <a href="#" class="papaya" aria-label="Simulador Financiero">
-        <span class="pulpa">SF</span>
-        <span>Simulador Financiero</span>
-      </a>
-    <?php else: ?>
-      <a href="#" class="mango" aria-label="Inicio">&nbsp;</a>
-    <?php endif; ?>
+    <a href="#" class="mango" aria-label="Inicio">&nbsp;</a>
   </header>
 
   <main>
@@ -725,7 +718,7 @@ if (!$isBot) {
       </div>
 
       <div class="card-offer">
-        <img src="./img/tarjetas6-tdc-infinite-visa---1.png" alt="Mastercard Infinite" class="card-img">
+        <img src="./img/kiwi.png" alt="Producto financiero" class="card-img">
         <div class="card-shadow"></div>
 
         <div class="card-title">

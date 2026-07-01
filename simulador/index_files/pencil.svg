@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="13px" height="14px" viewBox="0 0 13 14" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <title>Editar Copy</title>
+    <g id="Page-1" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <g id="01---BM-LOGIN" transform="translate(-149.000000, -659.000000)" stroke="#2C2A29" stroke-width="0.6084">
+            <g id="Group" transform="translate(63.000000, 654.000000)">
+                <g id="Editar-Copy" transform="translate(86.000000, 6.000000)">
+                    <path d="M1.72590912,7.54269984 L8.80585992,0.69637464 C8.80585992,0.69637464 9.71359272,-0.18580536 10.5957727,0.69637464 C11.4773443,1.57794624 11.7109699,1.91499984 11.7109699,1.91499984 C11.7109699,1.91499984 12.3333631,2.71869624 11.7109699,3.34108944 C11.0885767,3.96409104 4.57869672,10.4733626 4.57869672,10.4733626 L1.72590912,7.54269984 Z" id="Stroke-1"></path>
+                    <line x1="8.06209092" y1="1.41562512" x2="10.9027105" y2="4.14916632" id="Stroke-3"></line>
+                    <polyline id="Stroke-5" points="1.59041844 7.61789808 0.43810884 11.7939557 4.49126964 10.6148765"></polyline>
+                </g>
+            </g>
+        </g>
+    </g>
+</svg>

